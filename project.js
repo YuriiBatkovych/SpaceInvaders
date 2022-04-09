@@ -111,7 +111,6 @@ $(document).ready(
 
             draw(move) {
                 if (this.alive) {
-                    console.log("drawing alien");
                     if (move) this.moveAlien();
                     ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
                 }
@@ -130,13 +129,11 @@ $(document).ready(
                 this.x = x;
                 this.y = y - this.height;
 
-                this.visible = false;
                 this.active = false;
             }
 
             moveUp() {
                 this.y = this.y - 7;
-                this.visible = true;
                 if (this.y <= 0) {
                     this.kill();
                 }
@@ -146,7 +143,7 @@ $(document).ready(
                 var endXposition = this.x + this.width;
 
                 for (var i = 0; i < numberOfAliensInRaw; i++) {
-                    if (alienList1[i].alive && (this.y >= alienList1[i].y && this.y <= alienList1[i].y + alienList1[i].height) &&
+                    if (this.active && alienList1[i].alive && (this.y >= alienList1[i].y && this.y <= alienList1[i].y + alienList1[i].height) &&
                         ((this.x >= alienList1[i].x && this.x <= alienList1[i].x + alienList1[i].width) ||
                             (endXposition >= alienList1[i].x && this.x <= alienList1[i].x + alienList1[i].width))) {
                         alienList1[i].kill();
@@ -154,7 +151,7 @@ $(document).ready(
                         break;
                     }
 
-                    if (alienList2[i].alive && (this.y >= alienList2[i].y && this.y <= alienList2[i].y + alienList2[i].height) &&
+                    if (this.active && alienList2[i].alive && (this.y >= alienList2[i].y && this.y <= alienList2[i].y + alienList2[i].height) &&
                         ((this.x >= alienList2[i].x && this.x <= alienList2[i].x + alienList2[i].width) ||
                             (endXposition >= alienList2[i].x && this.x <= alienList2[i].x + alienList2[i].width))) {
                         alienList2[i].kill();
@@ -162,26 +159,27 @@ $(document).ready(
                         break;
                     }
                 }
+
             }
 
             draw() {
                 if (this.active) {
+
+                    this.checkIfkill();
                     this.moveUp();
+                    this.checkIfkill();
 
                     ctx.fillStyle = "white";
                     ctx.fillRect(this.x, this.y, this.width, this.height);
-
-                    this.checkIfkill();
                 }
             }
 
             start() {
-                this.visible = true;
                 this.active = true;
             }
 
             kill() {
-                this.visible = false;
+                console.log("bullet is killed");
                 this.active = false;
             }
         }
@@ -213,7 +211,6 @@ $(document).ready(
             }
 
             draw() {
-                console.log("drawing player");
                 ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
 
@@ -224,7 +221,7 @@ $(document).ready(
         var moveLeft = false;
         var moveRight = false;
 
-        var shootList = [];
+        var shooting = null;
 
         initialiseAliens();
 
@@ -237,16 +234,9 @@ $(document).ready(
         }
 
         function shoot() {
-            let i = 0;
-
-            for (; i < shootList.length; i++) {
-                if (!shootList[i].active)
-                    break;
-            }
-
-            if (i < 2) {
-                shootList[i] = new Bulet(player.x + player.width / 2, player.y);
-                shootList[i].start();
+            if (shooting === null || !shooting.active) {
+                shooting = new Bulet(player.x + player.width / 2, player.y);
+                shooting.start();
             }
         }
 
@@ -280,9 +270,10 @@ $(document).ready(
         }
 
         function drawShoots() {
-            for (var i = 0; i < shootList.length; i++) {
-                shootList[i].draw();
+            if (!(shooting === null)) {
+                shooting.draw();
             }
+
         }
 
         function drawAliens(move) {
@@ -344,7 +335,7 @@ $(document).ready(
             moveLeft = false;
             moveRight = false;
 
-            shootList = [];
+            shooting = null;
 
             initialiseAliens();
 
