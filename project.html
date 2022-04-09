@@ -4,6 +4,19 @@
 <style>
     body {
         margin: 0;
+        background-color: #0f021a;
+    }
+    
+    .float-left {
+        float: left
+    }
+    
+    #playButton {
+        background: #7623B9;
+        border-radius: 3px;
+        display: block;
+        font-size: 25px;
+        width: 150px;
     }
 </style>
 
@@ -14,7 +27,14 @@
 </head>
 
 <body>
-    <canvas width="1200" height="1200" id="can"> </canvas>
+    <div>
+        <div class="float-left">
+            <canvas width="1200" height="1200" id="can"> </canvas>
+        </div>
+        <div float="float-left">
+            <button id="playButton">Play</button>
+        </div>
+    </div>
     <script src="project.js"></script>
 </body>
 

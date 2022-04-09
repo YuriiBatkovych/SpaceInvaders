@@ -1,8 +1,16 @@
 var canvas = document.getElementById('can');
 var ctx = canvas.getContext('2d');
 
+var animationTimeout = null;
+
+const playButton = document.getElementById('playButton');
+playButton.addEventListener("click", startGame);
+
 canvas.width = 3 * window.innerWidth / 5;
 canvas.height = window.innerHeight - "100";
+
+const backImg = new Image()
+backImg.src = "./space.jpg"
 
 var firstRawRightBourd = false;
 var firstRawLeftBourd = true; // the last bourd which has been touched
@@ -19,6 +27,14 @@ function allAliensDown() {
         alienList1[i].moveDown();
         alienList2[i].moveDown();
     }
+}
+
+function allSeconRawDead() {
+    for (var i = 0; i < numberOfAliensInRaw; i++) {
+        if (alienList2[i].alive) return false;
+    }
+
+    return true;
 }
 
 class Alien {
@@ -39,7 +55,7 @@ class Alien {
 
     moveDown() {
         if (this.alive) {
-            this.y += 5;
+            this.y += 15;
         }
     }
 
@@ -52,6 +68,8 @@ class Alien {
                     this.x -= 5;
                     firstRawLeftBourd = false;
                     firstRawRightBourd = true;
+
+                    if (allSeconRawDead()) allAliensDown();
                 }
             } else {
                 if (this.x > 4) {
@@ -60,6 +78,8 @@ class Alien {
                     this.x += 5;
                     firstRawLeftBourd = true;
                     firstRawRightBourd = false;
+
+                    if (allSeconRawDead()) allAliensDown();
                 }
             }
         } else if (this.raw == 2) {
@@ -202,9 +222,14 @@ var moveRight = false;
 
 var shootList = [];
 
-for (var i = 0; i < numberOfAliensInRaw; i++) {
-    alienList1[i] = new Alien(i * canvas.width / 10, 100, 1);
-    alienList2[i] = new Alien(i * canvas.width / 10, 175, 2);
+initialiseAliens();
+
+function initialiseAliens() {
+    for (var i = 0; i < numberOfAliensInRaw; i++) {
+        alienList1[i] = new Alien(i * canvas.width / 10, 100, 1);
+        alienList2[i] = new Alien(i * canvas.width / 10, 175, 2);
+    }
+
 }
 
 function shoot() {
@@ -244,6 +269,10 @@ function startGame() {
         };
 
     });
+
+    if (!(animationTimeout === null)) clearTimeout(animationTimeout);
+
+    animate();
 }
 
 function drawShoots() {
@@ -283,9 +312,48 @@ function checkIfWin() {
     return true;
 }
 
+function checkIfLoose() {
+    for (var i = 0; i < numberOfAliensInRaw; i++) {
+        if (alienList1[i].alive && ((alienList1[i].y + alienList1[i].height >= canvas.height - 5) ||
+                (player.y >= alienList1[i].y && player.y <= alienList1[i].y + alienList1[i].height &&
+                    alienList1[i].x >= player.x && alienList1[i].x <= player.x + player.height)))
+            return true;
+        else if (alienList2[i].alive && ((alienList2[i].y + alienList2[i].height >= canvas.height - 5) ||
+                (player.y >= alienList2[i].y && player.y <= alienList2[i].y + alienList2[i].height &&
+                    alienList2[i].x >= player.x && alienList2[i].x <= player.x + player.height)))
+            return true;
+    }
+
+    return false;
+}
+
+function restart() {
+    firstRawRightBourd = false;
+    firstRawLeftBourd = true;
+    secondRawRightBourd = false;
+    secondRawLeftBourd = true;
+
+    alienList1 = [];
+    alienList2 = [];
+
+    player = new Player();
+    moveLeft = false;
+    moveRight = false;
+
+    shootList = [];
+
+    initialiseAliens();
+
+    playButton.innerHTML = "Restart";
+}
+
 function animate() {
-    ctx.fillStyle = 'rgb(4, 27, 27)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(backImg, 0, 0, canvas.width, canvas.height);
+
+    ctx.font = "45px Comic Sans MS";
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.fillText("Space Invaders", canvas.width / 2 - 15, 45);
 
     if (moveRight) {
         player.moverigth();
@@ -301,10 +369,30 @@ function animate() {
 
     if (checkIfWin()) {
         window.alert("Congratulations! You have won!");
+        restart();
+    } else if (checkIfLoose()) {
+        window.alert("Sorry! You have lost");
+        restart();
+    } else {
+        animationTimeout = setTimeout(animate, 25);
     }
-
-    setTimeout(animate, 25);
 }
 
-startGame();
-animate();
+function initialAnimation() {
+
+    //window.requestAnimationFrame(initialAnimation);
+
+    ctx.drawImage(backImg, 0, 0, canvas.width, canvas.height);
+
+    ctx.font = "45px Comic Sans MS";
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.fillText("Space Invaders", canvas.width / 2 - 15, 45);
+
+    player.draw();
+    drawAliens();
+    drawShoots();
+
+}
+
+initialAnimation();
